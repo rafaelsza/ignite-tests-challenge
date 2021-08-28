@@ -40,6 +40,8 @@ describe('Authenticate User', () => {
     })
 
     expect(statement).toHaveProperty('id')
+    expect(statement.type).toEqual('deposit')
+    expect(statement.amount).toBe(100)
   })
 
   it('should be able to create a new withdrawal if there are enough funds', async () => {

@@ -12,7 +12,7 @@ describe('Authenticate User', () => {
     showUserProfileUseCase = new ShowUserProfileUseCase(usersRepositoryInMemory);
   })
 
-  it('should be able view profile to user', async () => {
+  it('should be able show profile to user', async () => {
     const user = await usersRepositoryInMemory.create({
       name: 'User test',
       email: 'user@test.com',
@@ -24,7 +24,7 @@ describe('Authenticate User', () => {
     expect(showUserProfile).toEqual(user)
   })
 
-  it('should not be able view profile an nonexistent user', async () => {
+  it('should not be able show profile an nonexistent user', async () => {
     expect(async () => {
       await showUserProfileUseCase.execute('id_nonexistent');
     }).rejects.toBeInstanceOf(AppError)
