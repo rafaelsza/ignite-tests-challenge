@@ -70,6 +70,43 @@ describe('Create Statement Controller', () => {
     expect(response.body.type).toBe('withdraw')
   })
 
+  it('should be able to create a new transfer if there are enough funds', async () => {
+    await request(app).post('/api/v1/users').send({
+      name: 'User test transfer sender',
+      email: 'user-transfer-sender@test.com',
+      password: 'password'
+    })
+
+    const user_receiver_transfer = await request(app).post('/api/v1/users').send({
+      name: 'User test transfer receiver',
+      email: 'user-transfer-receiver@test.com',
+      password: 'password'
+    })
+
+    const responseToken = await request(app).post('/api/v1/sessions').send({
+      email: 'user-transfer-sender@test.com',
+      password: 'password'
+    })
+
+    await request(app).post('/api/v1/statements/deposit').set({
+      Authorization: `Bearer ${responseToken.body.token}`
+    }).send({
+      amount: 500,
+      description: 'Wage'
+    })
+
+    const response = await request(app).post(`/api/v1/statements/transfer/${user_receiver_transfer.body.id}`).set({
+      Authorization: `Bearer ${responseToken.body.token}`
+    }).send({
+      amount: 250,
+      description: 'Value Transfers'
+    })
+
+    expect(response.status).toBe(201)
+    expect(response.body.amount).toBe(250)
+    expect(response.body.type).toBe('transfer')
+  })
+
   it('should not be able to create a new withdrawal if there are not enough funds', async () => {
     await request(app).post('/api/v1/users').send({
       name: 'User test withdraw not enough funds',
@@ -94,6 +131,41 @@ describe('Create Statement Controller', () => {
     }).send({
       amount: 600,
       description: 'School'
+    })
+
+    expect(response.status).toBe(400)
+  })
+
+  it('should not be able to create a new transfer if there are not enough funds', async () => {
+    await request(app).post('/api/v1/users').send({
+      name: 'User test transfer not enough funds',
+      email: 'user-transfer-not-enough-funds@test.com',
+      password: 'password'
+    })
+
+    const user_receiver_transfer = await request(app).post('/api/v1/users').send({
+      name: 'User test transfer receiver not enough funds',
+      email: 'user-transfer-receiver-not-enough-funds@test.com',
+      password: 'password'
+    })
+
+    const responseToken = await request(app).post('/api/v1/sessions').send({
+      email: 'user-transfer-not-enough-funds@test.com',
+      password: 'password'
+    })
+
+    await request(app).post('/api/v1/statements/deposit').set({
+      Authorization: `Bearer ${responseToken.body.token}`
+    }).send({
+      amount: 600,
+      description: '2nd job remuneration'
+    })
+
+    const response = await request(app).post(`/api/v1/statements/transfer/${user_receiver_transfer.body.id}`).set({
+      Authorization: `Bearer ${responseToken.body.token}`
+    }).send({
+      amount: 700,
+      description: 'Value Transfers School'
     })
 
     expect(response.status).toBe(400)
